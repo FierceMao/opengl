@@ -1,1 +1,2 @@
 D:\Workspace\project\VS_2019\OpenGLProject\MyfirstOpenGLTest\Debug\Application.exe
+D:\OpenGL\opengl\OpenGLProject\MyfirstOpenGLTest\Debug\Application.exe

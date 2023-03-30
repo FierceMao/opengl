@@ -30,7 +30,4 @@
   <ItemGroup>
     <Library Include="Dependencies\GLFW\lib-vc2019\glfw3.lib" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Application.exe" />
-  </ItemGroup>
 </Project>
