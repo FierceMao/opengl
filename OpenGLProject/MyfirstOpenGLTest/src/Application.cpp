@@ -2,6 +2,49 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+
+struct ShaderProgramSource
+{
+    std::string VertexSource;
+    std::string FragmentSource;
+};
+
+static ShaderProgramSource ParseShader(const std::string& filepath) 
+{
+    std::ifstream stream(filepath);
+
+    enum class ShaderType {
+        NODE = -1, VERTEX = 0, FRAGMENT = 1
+    };
+
+    std::string line;
+    std::stringstream ss[2];
+    ShaderType type = ShaderType::NODE;
+
+    while (getline(stream, line))
+    {
+        if (line.find("#shader") != std::string::npos)
+        {
+            if (line.find("vertex") != std::string::npos)
+            {
+                type = ShaderType::VERTEX;
+            }
+            else if (line.find("fragment") != std::string::npos)
+            {
+                type = ShaderType::FRAGMENT;
+            }
+        }
+        else
+        {
+            ss[(int)type] << line << '\n';
+        }
+    }
+
+    return { ss[0].str(), ss[1].str() };
+}
 
 static unsigned int CompileShader(unsigned int type, const std::string& source)
 {
@@ -98,17 +141,24 @@ int main(void)
 
 #pragma region buffer
 
-    float positions[6] = {
-        -0.5f, -0.5f,
-         0.0f,  0.5f,
-         0.5f, -0.5f
+    float positions[12] = {
+         -0.5f, -0.5f, // 0
+          0.5f, -0.5f, // 1
+          0.5f,  0.5f, // 2
+         -0.5f,  0.5f  // 3
+    };
+
+    /* index buffer */
+    unsigned int indices[] = {
+        0, 1, 2,
+        2, 3, 0
     };
 
     /* Get Buffers */
     unsigned int buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
 
     /*Enable or disable a generic vertex attribute array*/
     glEnableVertexAttribArray(0);
@@ -116,31 +166,17 @@ int main(void)
     /*define an array of generic vertex attribute data*/
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    /* Get Buffers */
+    unsigned int indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
 #pragma endregion
 
+    ShaderProgramSource shaderProgram = ParseShader("res/shaders/Basic.shader");
 
-    std::string vertexShader =
-        "#version 330 core\n"
-        "\n"
-        "layout(location = 0) in vec4 position;"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = position;\n"
-        "}\n";
-
-    std::string fragmentShader =
-        "#version 330 core\n"
-        "\n"
-        "layout(location = 0) out vec4 color;"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-        "}\n";
-
-    unsigned int shader = CreateShader(vertexShader, fragmentShader);
+    unsigned int shader = CreateShader(shaderProgram.VertexSource, shaderProgram.FragmentSource);
     glUseProgram(shader);
 
     /* Loop until the user closes the window */
@@ -150,7 +186,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         /* Draw the triangle */
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
