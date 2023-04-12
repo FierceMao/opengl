@@ -11,6 +11,8 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 
+#include "VertexArray.h"
+
 struct ShaderProgramSource
 {
     std::string VertexSource;
@@ -165,14 +167,14 @@ int main(void)
         GLCall(glGenVertexArrays(1, &vao));
         GLCall(glBindVertexArray(vao));
 
+        VertexArray vertexArray;
+
         /* Get Buffers */
         VertexBuffer vertexBuffer(positions, 4 * 2 * sizeof(float));
 
-        /*Enable or disable a generic vertex attribute array*/
-        glEnableVertexAttribArray(0);
-
-        /*define an array of generic vertex attribute data*/
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+        VertexBufferLayout vertexBufferLayout;
+        vertexBufferLayout.Push<float>(2);
+        vertexArray.Addbuffer(vertexBuffer, vertexBufferLayout);
 
         /* Get Buffers */
         IndexBuffer indexBuffer(indices, 6 * sizeof(unsigned int));
@@ -185,7 +187,7 @@ int main(void)
 
         GLCall(int location = glGetUniformLocation(shader, "u_Color"));
         ASSERT(location != -1);
-        GLCall(glUniform4f(location, 0.2f, 0.3f, 0.8f, 1.0f));
+        GLCall(glUniform4f(location, 0.4f, 0.3f, 0.6f, 1.0f));
 
         GLCall(glBindVertexArray(0));
         GLCall(glUseProgram(0));
@@ -207,7 +209,7 @@ int main(void)
             GLCall(glUseProgram(shader));
             GLCall(glUniform4f(location, red, green, blue, 1.0f));
 
-            GLCall(glBindVertexArray(vao));
+            vertexArray.Bind();
             indexBuffer.Bind();
 
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
