@@ -18,3 +18,17 @@ bool GLLogCall(const char* function, const char* file, int line)
 
     return true;
 }
+
+void Renderer::Clear() const
+{
+
+}
+
+void Renderer::Draw(const VertexArray& vertexArray, IndexBuffer& indexBuffer, Shader& shader) const
+{
+	/* Draw the triangle */
+	shader.Bind();
+	vertexArray.Bind();
+	indexBuffer.Bind();
+    GLCall(glDrawElements(GL_TRIANGLES, indexBuffer.GetCount(), GL_UNSIGNED_INT, nullptr));
+}
