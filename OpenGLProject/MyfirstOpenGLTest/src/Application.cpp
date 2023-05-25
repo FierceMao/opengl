@@ -13,6 +13,7 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
 
 int main(void)
 {
@@ -46,11 +47,11 @@ int main(void)
     {
 #pragma region buffer
 
-        float positions[12] = {
-             -0.5f, -0.5f, // 0
-              0.5f, -0.5f, // 1
-              0.5f,  0.5f, // 2
-             -0.5f,  0.5f  // 3
+        float positions[] = {
+             -0.5f, -0.5f, 0.0f, 0.0f, // 0
+              0.5f, -0.5f, 1.0f, 0.0f, // 1
+              0.5f,  0.5f, 1.0f, 1.0f, // 2
+             -0.5f,  0.5f, 0.0f, 1.0f  // 3
         };
 
         /* index buffer */
@@ -59,6 +60,9 @@ int main(void)
             2, 3, 0
         };
 
+        GLCall(glEnable(GL_BLEND));
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
         unsigned int vao;
         GLCall(glGenVertexArrays(1, &vao));
         GLCall(glBindVertexArray(vao));
@@ -66,9 +70,10 @@ int main(void)
         VertexArray vertexArray;
 
         /* Get Buffers */
-        VertexBuffer vertexBuffer(positions, 4 * 2 * sizeof(float));
+        VertexBuffer vertexBuffer(positions, 4 * 4 * sizeof(float));
 
         VertexBufferLayout vertexBufferLayout;
+        vertexBufferLayout.Push<float>(2);
         vertexBufferLayout.Push<float>(2);
         vertexArray.Addbuffer(vertexBuffer, vertexBufferLayout);
 
@@ -79,7 +84,13 @@ int main(void)
 
         Shader shader("res/shaders/Basic.shader");
         shader.Bind();
-        shader.SetUniform4f("u_Color", 0.4f, 0.3f, 0.6f, 1.0f);
+        // shader.SetUniform4f("u_Color", 0.4f, 0.3f, 0.6f, 1.0f);
+
+        Texture texture("res/textures/Ryzen.png");
+        /* Bind the texture to the slot */
+        texture.Bind();
+        
+        shader.SetUniform1i("u_Texture", 0);
 
         vertexArray.UnBind();
         shader.UnBind();
@@ -101,7 +112,7 @@ int main(void)
 
             /* Draw the triangle */
             shader.Bind();
-            shader.SetUniform4f("u_Color", red, green, blue, 1.0f);
+            // shader.SetUniform4f("u_Color", red, green, blue, 1.0f);
 
             renderer.Draw(vertexArray, indexBuffer, shader);
 
