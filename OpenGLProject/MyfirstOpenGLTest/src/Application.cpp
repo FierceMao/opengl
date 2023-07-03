@@ -15,6 +15,9 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 int main(void)
 {
     GLFWwindow* window;
@@ -82,9 +85,12 @@ int main(void)
 
 #pragma endregion
 
+        glm::mat4 projection = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+
         Shader shader("res/shaders/Basic.shader");
         shader.Bind();
-        // shader.SetUniform4f("u_Color", 0.4f, 0.3f, 0.6f, 1.0f);
+        shader.SetUniform4f("u_Color", 0.4f, 0.3f, 0.6f, 1.0f);
+        shader.SetUniformMat4f("u_MVP", projection);
 
         Texture texture("res/textures/Ryzen.png");
         /* Bind the texture to the slot */
@@ -112,7 +118,7 @@ int main(void)
 
             /* Draw the triangle */
             shader.Bind();
-            // shader.SetUniform4f("u_Color", red, green, blue, 1.0f);
+            shader.SetUniform4f("u_Color", red, green, blue, 1.0f);
 
             renderer.Draw(vertexArray, indexBuffer, shader);
 
